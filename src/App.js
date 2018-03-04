@@ -1,19 +1,17 @@
-import React, { Component } from 'react';
-import './App.css';
+import React, {Component} from 'react';
+import WorkflowList from "./components/workflow/workflowList";
+import {Route} from "react-router-dom";
+import WorkflowContainer from "./components/workflow/WorkflowContainer";
 
 class App extends Component {
-  render() {
-    return (      
-        <div className="app">
-          <header className="app-header">
-            <h1>Mako Workflow</h1>
-          </header>
-          <p>
-            To get started, edit <code>src/App.js</code> and save to reload.
-          </p>
-        </div>      
-    );
-  }
+    render() {
+        return (
+            <div>                
+                <Route exact path="/" component={WorkflowList} />
+                <Route path="/w/:id" component={WorkflowContainer} />
+            </div>
+        );
+    }
 }
 
 export default App;
