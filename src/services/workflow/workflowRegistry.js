@@ -7,9 +7,7 @@ const entries = new Map([
 
 class WorkflowRegistry {
     getWorkflow(workflowId) {
-        if (!workflowId || typeof workflowId !== "string") {
-            debug.error("The workflow registry requires a 'string' workflowId.");
-        }
+        debug.errorIf(!workflowId || typeof workflowId !== "string", "The workflow registry requires a 'string' workflowId.");
         workflowId = workflowId.toLowerCase();
         return entries.get(workflowId);
     }

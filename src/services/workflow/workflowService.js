@@ -1,7 +1,7 @@
 import workflowFactory from "./workflowFactory";
 
 class WorkflowService {
-    getWorkflow(workflowId){
+    async getWorkflow(workflowId){
         return workflowFactory.getWorkflow(workflowId);
     }
 }

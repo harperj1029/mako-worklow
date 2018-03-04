@@ -1,21 +1,23 @@
 class debug{
-    constructor() {
-
-    }
-    error(...args) {
-        window.console.error(args);
-        throw new Error(args[0]);
+    errorIf(condition, errorMessage) {
+        if (typeof condition === "function") {
+            condition = condition();
+        }
+        if(condition) {
+            window.console.error(errorMessage);
+            throw new Error(errorMessage);
+        }
     }
 }
 
 const noop = () => {};
 
 const fakeDebug = {
-    error: noop
+    errorIf: noop
 }
 
 function allowDebug(){
-    return document.location.hostname == "localhost";
+    return document.location.hostname === "localhost";
 }
 
 export default allowDebug() ? new debug() : fakeDebug;
