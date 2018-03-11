@@ -8,8 +8,8 @@ const WorkflowList = () => {
                 <h1>Choose a workflow</h1>
             </header>
         <ul className="nav">
-            <li><Link to="/w/one">Workflow 1</Link></li>
-            <li><Link to="/w/two">Workflow 2</Link></li>
+            <li className="nav-item"><Link className="nav-link" to="/w/one">Workflow 1</Link></li>
+            <li className="nav-item"><Link className="nav-link" to="/w/two">Workflow 2</Link></li>
         </ul>
         </div>
     );
