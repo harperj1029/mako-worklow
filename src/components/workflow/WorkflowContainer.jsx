@@ -14,8 +14,10 @@ class WorkflowContainer extends Component {
             stepIndex: 0,
             currentStepDescription: null
         };
+        this.pendingNavigationAction = null;
 
-        this.navigate = this.navigate.bind(this);
+        this.onSubmitClick = this.onSubmitClick.bind(this);
+        this.onSubmit = this.onSubmit.bind(this);
     }
 
     async componentDidMount() {
@@ -45,30 +47,42 @@ class WorkflowContainer extends Component {
         }
     }
 
-    navigate(action) {
+    navigate() {
+        const action = this.pendingNavigationAction;
         let targetIndex;
-        switch (action) {
+        switch (this.pendingNavigationAction) {
             /* custom nav actions can go here */
             default:
                 debug.errorIf(action !== "previous" && action !== "next", `Action ${action} is not a supported navigation action.`)
                 targetIndex = this.state.stepIndex + (action === "previous" ? -1 : 1);
                 break;
         }
-        this.setStep(targetIndex,  this.workflow.steps[targetIndex]);
+        this.setStep(targetIndex, this.workflow.steps[targetIndex]);
+    }
+
+    onSubmitClick(action) {
+        // Store which action we'll fire off. This sux.
+        this.pendingNavigationAction = action;
     }
 
     getStep() {
         return <WorkflowStep stepDescription={this.state.currentStepDescription}/>
     }
 
+    onSubmit(e) {
+        e.preventDefault();
+
+        this.navigate();
+    }
+
     render() {
         return (
-            <div>
-                <WorkflowNav allowPrevious={this.canNavigate("previous")}
+            <form className="mt-5" onSubmit={this.onSubmit}>
+                <WorkflowNav className="mb-3" allowPrevious={this.canNavigate("previous")}
                              allowNext={this.canNavigate("next")}
-                             onNavigate={this.navigate}/>
+                             onSubmitClick={this.onSubmitClick}/>
                 {this.state.currentStepDescription && this.getStep()}
-            </div>
+            </form>
         );
     }
 }
