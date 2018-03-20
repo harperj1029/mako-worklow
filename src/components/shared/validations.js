@@ -1,15 +1,17 @@
 import yup from "yup";
 
-const yupRequired =  yup.object().shape({
-    input: yup.string().required()
+const yupRequired = yup.object().shape({
+    value: yup.string().required()
 });
 
-const required = async input =>{
-    return await yupRequired.isValid({
-       input
-    });
-};
+function required(value, fieldProps) {
+    // const isValid = await yupRequired.isValid({
+    //     value
+    // });
+
+    return value ? null : `${fieldProps.name} is required.`
+}
 
 export default {
-  required
+    required
 };

@@ -1,3 +1,4 @@
+/*
 import React from 'react';
 import PropTypes from "prop-types";
 import control from "./control";
@@ -31,4 +32,4 @@ Select.propTypes = {
     placeholder: PropTypes.string
 };
 
-export default control(Select);
+export default control(Select);*/
