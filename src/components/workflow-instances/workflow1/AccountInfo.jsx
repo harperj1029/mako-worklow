@@ -1,13 +1,15 @@
 import React, {Component} from "react";
 import Input from "../../shared/Input";
-import Select from "../../shared/Select";
+//import Select from "../../shared/Select";
 import validations from "../../shared/validations";
 
+/*
 const accountTypes = {
     basic: "Basic",
     premium: "Premium",
     ultimate: "Ultimate"
 };
+*/
 
 export default class AccountInfo extends Component {
     render() {

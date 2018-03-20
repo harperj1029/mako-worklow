@@ -6,10 +6,10 @@ const defaults = {
     text: "text"
 };
 
-let Input = ({label, ...props}) => (
+const Input = ({label, ...props}) => (
     <div className="form-group">
         <label>{label}</label>
-        <Control {...props} render={({isChanged, isUsed, error, ...props}) => (
+        <Control label={label} {...props} render={({isChanged, isUsed, error, ...props}) => (
             <React.Fragment>
                 <input
                     className={`form-control ${isChanged && isUsed && error ? "is-invalid" : ""}`}

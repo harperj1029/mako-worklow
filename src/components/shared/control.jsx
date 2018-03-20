@@ -1,4 +1,4 @@
-import React, {Component} from "react";
+import {Component} from "react";
 import PropTypes from "prop-types";
 import Guid from "guid";
 import omit from "object.omit";

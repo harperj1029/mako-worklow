@@ -2,6 +2,7 @@ import React, {Component} from "react";
 import WorkflowNav from "./WorkflowNav";
 import ReactRouterPropTypes from 'react-router-prop-types';
 import WorkflowStep from "./WorkflowStep";
+import WorkflowForm from "./WorkflowForm";
 import workflowService from "../../services/workflow/workflowService";
 import debug from "../../services/debug";
 
@@ -69,20 +70,21 @@ class WorkflowContainer extends Component {
         return <WorkflowStep stepDescription={this.state.currentStepDescription}/>
     }
 
-    onSubmit(e) {
-        e.preventDefault();
+    onSubmit(isValid) {
 
-        this.navigate();
+        if(isValid) {
+            this.navigate();
+        }
     }
 
     render() {
         return (
-            <form className="mt-5" onSubmit={this.onSubmit}>
-                <WorkflowNav className="mb-3" allowPrevious={this.canNavigate("previous")}
+            <WorkflowForm onSubmit={this.onSubmit}>
+                <WorkflowNav allowPrevious={this.canNavigate("previous")}
                              allowNext={this.canNavigate("next")}
                              onSubmitClick={this.onSubmitClick}/>
                 {this.state.currentStepDescription && this.getStep()}
-            </form>
+            </WorkflowForm>
         );
     }
 }

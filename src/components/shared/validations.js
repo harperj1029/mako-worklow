@@ -1,17 +1,32 @@
 import yup from "yup";
 
-const yupRequired = yup.object().shape({
-    value: yup.string().required()
+
+
+
+const yupEmail = yup.object().shape({
+    value: yup.string().email()()
 });
 
-function required(value, fieldProps) {
+function email(value, fieldProps){
+    //TODO: support for async validation
     // const isValid = await yupRequired.isValid({
     //     value
     // });
+    return value ? null : `${fieldProps.label} is required.`
+}
 
-    return value ? null : `${fieldProps.name} is required.`
+function required(value, fieldProps) {
+    //TODO: support for async validation
+    // const yupRequired = yup.object().shape({
+    //     value: yup.string().required()
+    // });
+    // const isValid = await yupRequired.isValid({
+    //     value
+    // });
+    return value ? null : `${fieldProps.label} is required.`
 }
 
 export default {
+    email,
     required
 };
