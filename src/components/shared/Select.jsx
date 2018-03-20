@@ -1,13 +1,14 @@
 import React from 'react';
 import PropTypes from "prop-types";
+import control from "./control";
 
 const Select = (props) => (
     <div className="form-group">
         <label>{props.title}</label>
         <select
             name={props.name}
-            value={props.selectedOption}
-            onChange={props.controlFunc}
+            value={props.value}
+            onChange={props.onChange}
             className="form-control">
             {props.placeholder && <option value="">{props.placeholder}</option>}
             {Object.keys(props.options).map(key => {
@@ -25,9 +26,9 @@ Select.propTypes = {
     name: PropTypes.string.isRequired,
     title: PropTypes.string.isRequired,
     options: PropTypes.object.isRequired,
-    selectedOption: PropTypes.string,
-    controlFunc: PropTypes.func.isRequired,
+    value: PropTypes.string,
+    onChange: PropTypes.func.isRequired,
     placeholder: PropTypes.string
 };
 
-export default Select;
+export default control(Select);
