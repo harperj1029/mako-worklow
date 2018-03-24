@@ -1,7 +1,6 @@
 import {Component} from "react";
 import PropTypes from "prop-types";
 import Guid from "guid";
-import omit from "object.omit";
 
 export default class Control extends Component {
     constructor(props) {
@@ -14,11 +13,7 @@ export default class Control extends Component {
     }
 
     static contextTypes = {
-        connect: PropTypes.func.isRequired,
-        disconnect: PropTypes.func.isRequired,
-        handleChange: PropTypes.func.isRequired,
-        handleBlur: PropTypes.func.isRequired,
-        getProps: PropTypes.func.isRequired
+        workflowForm: PropTypes.object.isRequired
     };
 
     static propTypes = {
@@ -26,35 +21,40 @@ export default class Control extends Component {
     };
 
     componentDidMount() {
-        this.context.connect(this, this.id);
+        const {workflowForm} = this.context;
+        workflowForm.connect(this, this.id);
     }
 
     componentWillUnmount() {
-        this.context.disconnect(this, this.id);
+        const {workflowForm} = this.context;
+        workflowForm.disconnect(this, this.id);
     }
 
     handleChange(event) {
+        const {workflowForm} = this.context;
         event.persist();
 
-        this.context.handleChange(event, this.id);
+        workflowForm.handleChange(event, this.id);
     }
 
     handleBlur() {
-        this.context.handleBlur(this.id);
+        const {workflowForm} = this.context;
+        workflowForm.handleBlur(this.id);
     }
 
     render() {
-        let suppliedAndGeneratedProps = this.context.getProps(this.id);
+        const {workflowForm} = this.context;
+        let suppliedAndGeneratedProps = workflowForm.getProps(this.id);
 
         if (!suppliedAndGeneratedProps) {
             return null;
         }
 
-        suppliedAndGeneratedProps = omit({
+        suppliedAndGeneratedProps = {
           ...suppliedAndGeneratedProps,
           onChange: this.handleChange,
           onBlur: this.handleBlur
-        }, ["render", "validations"]);
+        };
         return this.props.render(suppliedAndGeneratedProps);
     }
 }

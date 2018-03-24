@@ -10,7 +10,7 @@ export default class WorkflowForm extends Component {
         this.state = {
             fieldNameToIds: {},
             fields: {},
-            errorSummary: null
+            errors: null
         };
 
         this.connect = this.connect.bind(this);
@@ -22,11 +22,7 @@ export default class WorkflowForm extends Component {
     }
 
     static childContextTypes = {
-        connect: PropTypes.func.isRequired,
-        disconnect: PropTypes.func.isRequired,
-        handleChange: PropTypes.func.isRequired,
-        handleBlur: PropTypes.func.isRequired,
-        getProps: PropTypes.func.isRequired
+        workflowForm: PropTypes.object.isRequired
     };
 
     static propTypes = {
@@ -43,8 +39,7 @@ export default class WorkflowForm extends Component {
                 ...previousState.fields,
                 [id]: {
                     ...control.props,
-                    value: control.props.value || "",
-                    validations: control.props.validations || []
+                    value: control.props.value || ""
                 }
             }
         }), this.setFieldErrors);
@@ -76,7 +71,7 @@ export default class WorkflowForm extends Component {
                 [id]: {
                     ...previousState.fields[id],
                     isChanged: true,
-                    isUsed: true,
+                    isTouched: true,
                     value: event.target.value || ""
                 }
             }
@@ -89,10 +84,10 @@ export default class WorkflowForm extends Component {
                 ...previousState.fields,
                 [id]: {
                     ...previousState.fields[id],
-                    isUsed: true
+                    isTouched: true
                 }
             }
-        }));
+        }), this.setFieldErrors);
     }
 
     getProps(id) {
@@ -102,39 +97,42 @@ export default class WorkflowForm extends Component {
         }
     }
 
-    setFieldErrors() {
-        this.setState(previousState => {
-            const allFields = Object.keys(previousState.fieldNameToIds).reduce((allFields, name) => {
-                allFields[name] = previousState.fieldNameToIds[name].map(id => previousState.fields[id]);
+    async setFieldErrors() {
+        const runIt = async () =>{
+            const allFields = Object.keys(this.state.fieldNameToIds).reduce((allFields, name) => {
+                allFields[name] = this.state.fieldNameToIds[name].map(id => this.state.fields[id]);
                 return allFields;
             }, {});
-            const errorSummary = new Map();
-            const fields = Object.keys(previousState.fields).reduce((updatedFields, id) => {
-                const fieldProps = previousState.fields[id];
+            const errors = new Map();
+            const fields = await Object.keys(this.state.fields).reduce(async (updatedFieldsPromise, id) => {
+                const fieldProps = this.state.fields[id];
 
+                const updatedFields = await updatedFieldsPromise;
                 updatedFields[id] = {
-                    ...previousState.fields[id]
+                    ...this.state.fields[id]
                 };
 
-                for (const validation of fieldProps.validations) {
-                    const error = validation(fieldProps.value, fieldProps, allFields);
-
+                if(fieldProps.validate) {
+                    const error = await fieldProps.validate(fieldProps.value, fieldProps, allFields);
                     if (error) {
                         updatedFields[id].error = error;
-                        errorSummary.set(id, error);
-
-                        break;
+                        errors.set(id, error);
                     } else {
                         delete updatedFields[id].error;
                     }
                 }
                 return updatedFields;
-            }, {});
+            }, Promise.resolve({}));
 
             return {
                 fields: fields,
-                errorSummary: errorSummary
+                errors: errors
             };
+        };
+        const result = await runIt();
+        this.setState({
+           ...this.state,
+           fields: result.fields
         });
 
     }
@@ -147,7 +145,7 @@ export default class WorkflowForm extends Component {
                     fields[id] = {
                         ...previousState.fields[id],
                         isChanged: true,
-                        isUsed: true
+                        isTouched: true
                     };
 
                     return fields;
@@ -165,7 +163,7 @@ export default class WorkflowForm extends Component {
                         fields[id] = {
                             ...previousState.fields[id],
                             isChanged: true,
-                            isUsed: true
+                            isTouched: true
                         };
 
                         return components;
@@ -177,14 +175,15 @@ export default class WorkflowForm extends Component {
         }), this.setFieldErrors);
     }
 
-
     getChildContext() {
         return {
-            connect: this.connect,
-            disconnect: this.disconnect,
-            handleChange: this.handleChange,
-            handleBlur: this.handleBlur,
-            getProps: this.getProps
+            workflowForm: {
+                connect: this.connect,
+                disconnect: this.disconnect,
+                handleChange: this.handleChange,
+                handleBlur: this.handleBlur,
+                getProps: this.getProps
+            }
         };
     }
 
@@ -192,7 +191,7 @@ export default class WorkflowForm extends Component {
         e.preventDefault();
 
         this.validateAll();
-        this.props.onSubmit(!this.state.errorSummary || this.state.errorSummary.size === 0);
+        this.props.onSubmit(!this.state.errors || this.state.errors.size === 0);
     }
 
     render() {

@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from "prop-types";
 import Control from "./control";
+import omit from "object.omit";
 
 const defaults = {
     text: "text"
@@ -9,15 +10,15 @@ const defaults = {
 const Input = ({label, ...props}) => (
     <div className="form-group">
         <label>{label}</label>
-        <Control label={label} {...props} render={({isChanged, isUsed, error, ...props}) => (
+        <Control label={label} {...props} render={({isChanged, isTouched: isTouched, error, ...props}) => (
             <React.Fragment>
                 <input
-                    className={`form-control ${isChanged && isUsed && error ? "is-invalid" : ""}`}
+                    className={`form-control ${isChanged && isTouched && error ? "is-invalid" : ""}`}
                     name={props.name}
                     type={props.inputType || defaults.text}
                     placeholder={props.placeholder}
-                    {...props} />
-                {(isChanged && isUsed && error) &&
+                    {...(omit(props, ["label", "validate", "render"]))} />
+                {(isChanged && isTouched && error) &&
                 <span className="invalid-feedback">{error}</span>}
             </React.Fragment>
         )}/>
@@ -28,14 +29,14 @@ Input.propTypes = {
     name: PropTypes.string.isRequired,
     placeholder: PropTypes.string,
     isChanged: PropTypes.bool,
-    isUsed: PropTypes.bool,
+    isTouched: PropTypes.bool,
     error: PropTypes.string,
     label: PropTypes.string.isRequired
 };
 
 Input.defaultProps = {
     isChanged: false,
-    isUsed: false
+    isTouched: false
 };
 
 export default Input;
