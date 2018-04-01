@@ -1,16 +1,22 @@
 import React, {Component} from "react";
 import WorkflowNav from "./WorkflowNav";
 import ReactRouterPropTypes from 'react-router-prop-types';
-import WorkflowStep from "./WorkflowStep";
 import WorkflowForm from "./WorkflowForm";
 import workflowService from "../../services/workflow/workflowService";
 import debug from "../../services/debug";
 
 class WorkflowContainer extends Component {
-    constructor(props) {
-        super(props);
+    constructor(props, context) {
+        super(props, context);
 
         this.workflow = null;
+        this.workflowData = {
+            accountInfo: {
+                fullName: "Jason Harper",
+                email: "foo@bar.com",
+                accountType: "premium"
+            }
+        };
         this.state = {
             stepIndex: 0,
             currentStepDescription: null
@@ -21,15 +27,19 @@ class WorkflowContainer extends Component {
         this.onSubmit = this.onSubmit.bind(this);
     }
 
+    static propTypes  = {
+        match: ReactRouterPropTypes.match
+    };
+
     async componentDidMount() {
         const workflowId = this.props.match.params.id;
         this.workflow = await workflowService.getWorkflow(workflowId);
         debug.errorIf(Array.isArray(this.workflow.steps) === false || this.workflow.steps.length === 0,
             `Workflow (id: ${workflowId}) is missing the required 'steps' array.`);
-        this.setStep(0, this.workflow.steps[0]);
+        this.setCurrentStepInfo(0, this.workflow.steps[0]);
     }
 
-    setStep(index, stepDescription) {
+    setCurrentStepInfo(index, stepDescription) {
         this.setState({
             stepIndex: index,
             currentStepDescription: stepDescription
@@ -58,7 +68,7 @@ class WorkflowContainer extends Component {
                 targetIndex = this.state.stepIndex + (action === "previous" ? -1 : 1);
                 break;
         }
-        this.setStep(targetIndex, this.workflow.steps[targetIndex]);
+        this.setCurrentStepInfo(targetIndex, this.workflow.steps[targetIndex]);
     }
 
     onSubmitClick(action) {
@@ -67,29 +77,31 @@ class WorkflowContainer extends Component {
     }
 
     getStep() {
-        return <WorkflowStep stepDescription={this.state.currentStepDescription}/>
+        const Component = this.state.currentStepDescription.component;
+        return <Component workflowData={this.workflowData} ref={ref => this.stepComponent = ref} />
     }
 
-    onSubmit(isValid) {
-        if(isValid) {
+    onSubmit(formIsValid) {
+        if(formIsValid && (!this.stepComponent || this.stepComponent.isValid())) {
+            if(this.stepComponent) {
+                this.workflowData = this.stepComponent.getData();
+            }
             this.navigate();
         }
     }
 
     render() {
-        return (
-            <WorkflowForm onSubmit={this.onSubmit}>
-                <WorkflowNav allowPrevious={this.canNavigate("previous")}
-                             allowNext={this.canNavigate("next")}
-                             onSubmitClick={this.onSubmitClick}/>
-                {this.state.currentStepDescription && this.getStep()}
-            </WorkflowForm>
+        return (<React.StrictMode>
+                <WorkflowForm onSubmit={this.onSubmit}>
+                    <WorkflowNav allowPrevious={this.canNavigate("previous")}
+                                 allowNext={this.canNavigate("next")}
+                                 onSubmitClick={this.onSubmitClick}/>
+                    {this.state.currentStepDescription && this.getStep()}
+                </WorkflowForm>
+                <pre>{JSON.stringify(this.workflowData, null, 2)}</pre>
+            </React.StrictMode>
         );
     }
 }
-
-WorkflowContainer.propTypes = {
-    match: ReactRouterPropTypes.match
-};
 
 export default WorkflowContainer;

@@ -8,7 +8,6 @@ export default class WorkflowForm extends Component {
         super(props, context);
 
         this.state = {
-            fieldNameToIds: {},
             fields: {},
             errors: null
         };
@@ -19,6 +18,7 @@ export default class WorkflowForm extends Component {
         this.handleBlur = this.handleBlur.bind(this);
         this.getProps = this.getProps.bind(this);
         this.onSubmit = this.onSubmit.bind(this);
+        this.getValues = this.getValues.bind(this);
     }
 
     static childContextTypes = {
@@ -29,15 +29,11 @@ export default class WorkflowForm extends Component {
         onSubmit: PropTypes.func.isRequired
     };
 
-    registerControl(control, id) {
+    registerControl(control, name) {
         this.setState(previousState => ({
-            fieldNameToIds: {
-                ...previousState.fieldNameToIds,
-                [control.props.name]: [...(previousState.fieldNameToIds[control.props.name] || []), id]
-            },
             fields: {
                 ...previousState.fields,
-                [id]: {
+                [name]: {
                     ...control.props,
                     value: control.props.value || ""
                 }
@@ -45,31 +41,21 @@ export default class WorkflowForm extends Component {
         }), this.setFieldErrors);
     }
 
-    unregisterControl(control, id) {
+    unregisterControl(control, name) {
         this.setState(previousState => {
-            const fieldIdsForName = [...previousState.fieldNameToIds[control.props.name]];
-
-            fieldIdsForName.splice(fieldIdsForName.indexOf(id), 1);
-
-            // Either reduce the id-mapped fields (if some still remain) or eliminate the field
-            const fieldNameToIds = fieldIdsForName.length ? {
-                ...previousState.fieldNameToIds,
-                ...{[control.props.name]: fieldIdsForName}
-            } : omit(previousState.fieldNameToIds, control.props.name);
 
             return {
-                fieldNameToIds,
-                fields: omit(previousState.fields, id)
+                fields: omit(previousState.fields, name)
             };
         });
     }
 
-    handleChange(event, id) {
+    handleChange(event, name) {
         this.setState(previousState => ({
             fields: {
                 ...previousState.fields,
-                [id]: {
-                    ...previousState.fields[id],
+                [name]: {
+                    ...previousState.fields[name],
                     isChanged: true,
                     isTouched: true,
                     value: event.target.value || ""
@@ -78,47 +64,45 @@ export default class WorkflowForm extends Component {
         }), this.setFieldErrors);
     }
 
-    handleBlur(id) {
+    handleBlur(name) {
         this.setState(previousState => ({
             fields: {
                 ...previousState.fields,
-                [id]: {
-                    ...previousState.fields[id],
+                [name]: {
+                    ...previousState.fields[name],
                     isTouched: true
                 }
             }
         }), this.setFieldErrors);
     }
 
-    getProps(id) {
-        if (this.state.fields[id]) {
-            const {...props} = this.state.fields[id];
+    getProps(name) {
+        if (this.state.fields[name]) {
+            const {...props} = this.state.fields[name];
             return props;
         }
     }
 
     async setFieldErrors() {
         const runIt = async () => {
-            const allFields = Object.keys(this.state.fieldNameToIds).reduce((allFields, name) => {
-                allFields[name] = this.state.fieldNameToIds[name].map(id => this.state.fields[id]);
-                return allFields;
-            }, {});
+            const allFields = this.state.fields;
             const errors = new Map();
             const fields = {};
-            for (const id of Object.keys(this.state.fields)) {
-                const props = this.state.fields[id];
 
-                fields[id] = {
-                    ...this.state.fields[id]
+            for (const name of Object.keys(this.state.fields)) {
+                const props = this.state.fields[name];
+
+                fields[name] = {
+                    ...this.state.fields[name]
                 };
 
                 if (props.validate) {
                     const error = await props.validate(props.value, props, allFields);
                     if (error) {
-                        fields[id].error = error;
-                        errors.set(id, error);
+                        fields[name].error = error;
+                        errors.set(name, error);
                     } else {
-                        delete fields[id].error;
+                        delete fields[name].error;
                     }
                 }
             }
@@ -139,9 +123,9 @@ export default class WorkflowForm extends Component {
         this.setState(previousState => ({
             fields: {
                 ...previousState.fields,
-                ...previousState.fields[name].reduce((fields, id) => {
-                    fields[id] = {
-                        ...previousState.fields[id],
+                ...previousState.fields[name].reduce((fields, name) => {
+                    fields[name] = {
+                        ...previousState.fields[name],
                         isChanged: true,
                         isTouched: true
                     };
@@ -157,19 +141,15 @@ export default class WorkflowForm extends Component {
             this.setState(previousState => ({
                 fields: {
                     ...previousState.fields,
-                    ...Object.keys(previousState.fieldNameToIds).reduce((fields, name) => {
-                        previousState.fieldNameToIds[name].reduce((components, id) => {
-                            fields[id] = {
-                                ...previousState.fields[id],
+                    ...Object.keys(previousState.fields).reduce((fields, name) => {
+                            fields[name] = {
+                                ...previousState.fields[name],
                                 isChanged: true,
                                 isTouched: true
                             };
 
-                            return components;
-                        }, {});
-
-                        return fields;
-                    }, {})
+                            return fields;
+                        }, {})
                 }
             }), async () => {
                 await this.setFieldErrors();
@@ -185,9 +165,17 @@ export default class WorkflowForm extends Component {
                 disconnect: this.unregisterControl,
                 handleChange: this.handleChange,
                 handleBlur: this.handleBlur,
-                getProps: this.getProps
+                getProps: this.getProps,
+                getValues: this.getValues
             }
         };
+    }
+
+    getValues(){
+        return Object.keys(this.state.fields).reduce((values, fieldName) => {
+            values[fieldName] = this.state.fields[fieldName].value;
+            return values;
+        }, {});
     }
 
     async onSubmit(e) {

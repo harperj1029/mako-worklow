@@ -30,7 +30,6 @@ const Select = ({label, unselectedText, options, ...props}) => (
 
 Select.propTypes = {
     name: PropTypes.string.isRequired,
-    value: PropTypes.string,
     unselectedText: PropTypes.string,
     options: PropTypes.object.isRequired,
     label: PropTypes.string.isRequired,

@@ -7,7 +7,7 @@ const defaults = {
     text: "text"
 };
 
-const Input = ({label, value, ...props}) => (
+const Input = ({label, ...props}) => (
     <div className="form-group">
         <label>{label}</label>
         <Control label={label} {...props} render={({isChanged, isTouched, error, ...props}) => (
@@ -17,7 +17,6 @@ const Input = ({label, value, ...props}) => (
                     name={props.name}
                     type={props.type || defaults.text}
                     placeholder={props.placeholder}
-                    value={value}
                     {...(omit(props, ["label", "validate", "render"]))} />
                 {(isChanged && isTouched && error) &&
                     <span className="invalid-feedback">{error}</span>}
@@ -27,7 +26,6 @@ const Input = ({label, value, ...props}) => (
 
 Input.propTypes = {
     name: PropTypes.string.isRequired,
-    value: PropTypes.string,
     type: PropTypes.string.isRequired,
     placeholder: PropTypes.string,
     label: PropTypes.string.isRequired,

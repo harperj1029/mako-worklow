@@ -1,4 +1,29 @@
-import React from "react";
+import React, {Component} from "react";
+import PropTypes from "prop-types";
+export default class Preferences extends Component{
+    constructor(props, context){
+        super(props, context);
 
-const step1 = () => (<div>Step 2</div>);
-export default step1;
+        this.workflowData =  props.workflowData;
+    }
+
+    static propTypes  = {
+        workflowData: PropTypes.object.isRequired
+    };
+
+    static contextTypes = {
+        workflowForm: PropTypes.object.isRequired
+    };
+
+    isValid(){
+        return true;
+    }
+
+    getData(){
+        return this.workflowData;
+    }
+
+    render(){
+        return <div>Step 2</div>;
+    }
+}

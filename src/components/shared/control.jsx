@@ -1,12 +1,9 @@
 import {Component} from "react";
 import PropTypes from "prop-types";
-import Guid from "guid";
 
 export default class Control extends Component {
     constructor(props) {
         super(props);
-
-        this.id = Guid.raw();
 
         this.handleChange = this.handleChange.bind(this);
         this.handleBlur = this.handleBlur.bind(this);
@@ -22,29 +19,29 @@ export default class Control extends Component {
 
     componentDidMount() {
         const {workflowForm} = this.context;
-        workflowForm.connect(this, this.id);
+        workflowForm.connect(this, this.props.name);
     }
 
     componentWillUnmount() {
         const {workflowForm} = this.context;
-        workflowForm.disconnect(this, this.id);
+        workflowForm.disconnect(this, this.props.name);
     }
 
     handleChange(event) {
         const {workflowForm} = this.context;
         event.persist();
 
-        workflowForm.handleChange(event, this.id);
+        workflowForm.handleChange(event, this.props.name);
     }
 
     handleBlur() {
         const {workflowForm} = this.context;
-        workflowForm.handleBlur(this.id);
+        workflowForm.handleBlur(this.props.name);
     }
 
     render() {
         const {workflowForm} = this.context;
-        let suppliedAndGeneratedProps = workflowForm.getProps(this.id);
+        let suppliedAndGeneratedProps = workflowForm.getProps(this.props.name);
 
         if (!suppliedAndGeneratedProps) {
             return null;
