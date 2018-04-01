@@ -6,6 +6,8 @@ import './custom.scss';
 import {BrowserRouter} from "react-router-dom";
 
 ReactDOM.render((
-    <BrowserRouter>
-        <App />
-    </BrowserRouter>), document.getElementById('root'));
+        <BrowserRouter>
+            <React.StrictMode>
+                <App />
+            </React.StrictMode>
+        </BrowserRouter>), document.getElementById('root'));

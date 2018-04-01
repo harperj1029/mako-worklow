@@ -13,8 +13,8 @@ export default class WorkflowForm extends Component {
             errors: null
         };
 
-        this.connect = this.connect.bind(this);
-        this.disconnect = this.disconnect.bind(this);
+        this.registerControl = this.registerControl.bind(this);
+        this.unregisterControl = this.unregisterControl.bind(this);
         this.handleChange = this.handleChange.bind(this);
         this.handleBlur = this.handleBlur.bind(this);
         this.getProps = this.getProps.bind(this);
@@ -29,7 +29,7 @@ export default class WorkflowForm extends Component {
         onSubmit: PropTypes.func.isRequired
     };
 
-    connect(control, id) {
+    registerControl(control, id) {
         this.setState(previousState => ({
             fieldNameToIds: {
                 ...previousState.fieldNameToIds,
@@ -45,7 +45,7 @@ export default class WorkflowForm extends Component {
         }), this.setFieldErrors);
     }
 
-    disconnect(control, id) {
+    unregisterControl(control, id) {
         this.setState(previousState => {
             const fieldIdsForName = [...previousState.fieldNameToIds[control.props.name]];
 
@@ -181,8 +181,8 @@ export default class WorkflowForm extends Component {
     getChildContext() {
         return {
             workflowForm: {
-                connect: this.connect,
-                disconnect: this.disconnect,
+                connect: this.registerControl,
+                disconnect: this.unregisterControl,
                 handleChange: this.handleChange,
                 handleBlur: this.handleBlur,
                 getProps: this.getProps

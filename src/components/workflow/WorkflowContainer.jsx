@@ -71,7 +71,6 @@ class WorkflowContainer extends Component {
     }
 
     onSubmit(isValid) {
-
         if(isValid) {
             this.navigate();
         }
