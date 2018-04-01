@@ -98,43 +98,41 @@ export default class WorkflowForm extends Component {
     }
 
     async setFieldErrors() {
-        const runIt = async () =>{
+        const runIt = async () => {
             const allFields = Object.keys(this.state.fieldNameToIds).reduce((allFields, name) => {
                 allFields[name] = this.state.fieldNameToIds[name].map(id => this.state.fields[id]);
                 return allFields;
             }, {});
             const errors = new Map();
-            const fields = await Object.keys(this.state.fields).reduce(async (updatedFieldsPromise, id) => {
-                const fieldProps = this.state.fields[id];
+            const fields = {};
+            for (const id of Object.keys(this.state.fields)) {
+                const props = this.state.fields[id];
 
-                const updatedFields = await updatedFieldsPromise;
-                updatedFields[id] = {
+                fields[id] = {
                     ...this.state.fields[id]
                 };
 
-                if(fieldProps.validate) {
-                    const error = await fieldProps.validate(fieldProps.value, fieldProps, allFields);
+                if (props.validate) {
+                    const error = await props.validate(props.value, props, allFields);
                     if (error) {
-                        updatedFields[id].error = error;
+                        fields[id].error = error;
                         errors.set(id, error);
                     } else {
-                        delete updatedFields[id].error;
+                        delete fields[id].error;
                     }
                 }
-                return updatedFields;
-            }, Promise.resolve({}));
-
+            }
             return {
-                fields: fields,
-                errors: errors
-            };
+                fields,
+                errors
+            }
         };
         const result = await runIt();
         this.setState({
-           ...this.state,
-           fields: result.fields
+            ...this.state,
+            fields: result.fields,
+            errors: result.errors
         });
-
     }
 
     validate(name) {
@@ -155,24 +153,29 @@ export default class WorkflowForm extends Component {
     }
 
     validateAll() {
-        this.setState(previousState => ({
-            fields: {
-                ...previousState.fields,
-                ...Object.keys(previousState.fieldNameToIds).reduce((fields, name) => {
-                    previousState.fieldNameToIds[name].reduce((components, id) => {
-                        fields[id] = {
-                            ...previousState.fields[id],
-                            isChanged: true,
-                            isTouched: true
-                        };
+        return new Promise(resolve => {
+            this.setState(previousState => ({
+                fields: {
+                    ...previousState.fields,
+                    ...Object.keys(previousState.fieldNameToIds).reduce((fields, name) => {
+                        previousState.fieldNameToIds[name].reduce((components, id) => {
+                            fields[id] = {
+                                ...previousState.fields[id],
+                                isChanged: true,
+                                isTouched: true
+                            };
 
-                        return components;
-                    }, {});
+                            return components;
+                        }, {});
 
-                    return fields;
-                }, {})
-            }
-        }), this.setFieldErrors);
+                        return fields;
+                    }, {})
+                }
+            }), async () => {
+                await this.setFieldErrors();
+                resolve();
+            });
+        });
     }
 
     getChildContext() {
@@ -187,10 +190,10 @@ export default class WorkflowForm extends Component {
         };
     }
 
-    onSubmit(e) {
+    async onSubmit(e) {
         e.preventDefault();
 
-        this.validateAll();
+        await this.validateAll();
         this.props.onSubmit(!this.state.errors || this.state.errors.size === 0);
     }
 
