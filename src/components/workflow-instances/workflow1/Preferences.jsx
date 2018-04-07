@@ -1,5 +1,6 @@
 import React, {Component} from "react";
 import PropTypes from "prop-types";
+
 export default class Preferences extends Component{
     constructor(props, context){
         super(props, context);

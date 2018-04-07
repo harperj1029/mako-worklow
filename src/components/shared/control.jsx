@@ -14,7 +14,8 @@ export default class Control extends Component {
     };
 
     static propTypes = {
-        render: PropTypes.func.isRequired
+        render: PropTypes.func.isRequired,
+        name: PropTypes.string.isRequired
     };
 
     componentDidMount() {

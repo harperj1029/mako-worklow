@@ -186,7 +186,7 @@ export default class WorkflowForm extends Component {
     }
 
     render() {
-        const {onSubmit, ...props} = this.props; // eslint-disable-line no-unused-vars
-        return <form className="mt-5" onSubmit={this.onSubmit} {...props}/>
+        const {onSubmit, id, ...props} = this.props; // eslint-disable-line no-unused-vars
+        return <form onSubmit={this.onSubmit} id={id} {...props}/>
     }
 }

@@ -4,6 +4,13 @@ import ReactRouterPropTypes from 'react-router-prop-types';
 import WorkflowForm from "./WorkflowForm";
 import workflowService from "../../services/workflow/workflowService";
 import debug from "../../services/debug";
+import {Row, Col, PageHeader} from "react-bootstrap";
+import CircularProgressbar from 'react-circular-progressbar';
+import 'react-circular-progressbar/dist/styles.css';
+
+const settings = {
+    formId: "workflowForm"
+};
 
 class WorkflowContainer extends Component {
     constructor(props, context) {
@@ -19,6 +26,7 @@ class WorkflowContainer extends Component {
         };
         this.state = {
             stepIndex: 0,
+            progress: 0,
             currentStepDescription: null
         };
         this.pendingNavigationAction = null;
@@ -27,7 +35,7 @@ class WorkflowContainer extends Component {
         this.onSubmit = this.onSubmit.bind(this);
     }
 
-    static propTypes  = {
+    static propTypes = {
         match: ReactRouterPropTypes.match
     };
 
@@ -42,6 +50,7 @@ class WorkflowContainer extends Component {
     setCurrentStepInfo(index, stepDescription) {
         this.setState({
             stepIndex: index,
+            progress: parseInt(((index + 1) / this.workflow.steps.length) * 100, 10),
             currentStepDescription: stepDescription
         });
     }
@@ -78,12 +87,12 @@ class WorkflowContainer extends Component {
 
     getStep() {
         const Component = this.state.currentStepDescription.component;
-        return <Component workflowData={this.workflowData} ref={ref => this.stepComponent = ref} />
+        return <Component workflowData={this.workflowData} ref={ref => this.stepComponent = ref}/>
     }
 
     onSubmit(formIsValid) {
-        if(formIsValid && (!this.stepComponent || this.stepComponent.isValid())) {
-            if(this.stepComponent) {
+        if (formIsValid && (!this.stepComponent || this.stepComponent.isValid())) {
+            if (this.stepComponent) {
                 this.workflowData = this.stepComponent.getData();
             }
             this.navigate();
@@ -91,15 +100,32 @@ class WorkflowContainer extends Component {
     }
 
     render() {
-        return (<React.StrictMode>
-                <WorkflowForm onSubmit={this.onSubmit}>
-                    <WorkflowNav allowPrevious={this.canNavigate("previous")}
-                                 allowNext={this.canNavigate("next")}
-                                 onSubmitClick={this.onSubmitClick}/>
-                    {this.state.currentStepDescription && this.getStep()}
-                </WorkflowForm>
-                <pre>{JSON.stringify(this.workflowData, null, 2)}</pre>
-            </React.StrictMode>
+        return (<React.Fragment>
+                <Row className="mt-3">
+                    <Col sm={3} style={{alignSelf: 'center'}}>
+                        <WorkflowNav allowPrevious={this.canNavigate("previous")} formId={settings.formId}
+                             allowNext={this.canNavigate("next")}
+                             onSubmitClick={this.onSubmitClick}/>
+                    </Col>
+                    <Col sm={9} className="pb-2" style={{borderBottom: 'solid 2px #ccc'}}>{this.state.currentStepDescription && <React.Fragment>
+                        <PageHeader>{this.state.currentStepDescription.title}</PageHeader>
+                        <span className="help-text">{this.state.currentStepDescription.description}</span>
+                    </React.Fragment>}
+                    </Col>
+                </Row>
+                <Row className="mt-4">
+                    <Col sm={3}>
+                        <div style={{width: '180px'}}>
+                            <CircularProgressbar percentage={this.state.progress} initialAnimation={true} />
+                        </div>
+                    </Col>
+                    <Col sm={9}>
+                        <WorkflowForm onSubmit={this.onSubmit} id={settings.formId}>
+                            {this.state.currentStepDescription && this.getStep()}
+                        </WorkflowForm>
+                    </Col>
+                </Row>
+            </React.Fragment>
         );
     }
 }
