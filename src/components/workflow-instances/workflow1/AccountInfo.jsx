@@ -18,8 +18,8 @@ export default class AccountInfo extends Component {
         this.workflowData = {
             ...props.workflowData,
             accountInfo: props.workflowData.accountInfo || {
-                fullName: "Jason Harper",
-                email: "foo@bar.com",
+                fullName: "",
+                email: "",
                 accountType: "premium"
             }
         };
