@@ -1,14 +1,22 @@
 import React, {Component} from "react";
 import PropTypes from "prop-types";
+import {Table} from "react-bootstrap";
+import {ToastContainer, toast} from 'react-toastify';
+import {Redirect} from "react-router-dom";
 
-export default class Preferences extends Component{
-    constructor(props, context){
+export default class Confirmation extends Component {
+    constructor(props, context) {
         super(props, context);
 
-        this.workflowData =  props.workflowData;
+        this.workflowData = props.workflowData;
+        this.state = {
+            redirect: false
+        };
+
+        this.redirect = this.redirect.bind(this);
     }
 
-    static propTypes  = {
+    static propTypes = {
         workflowData: PropTypes.object.isRequired
     };
 
@@ -16,15 +24,70 @@ export default class Preferences extends Component{
         workflowForm: PropTypes.object.isRequired
     };
 
-    isValid(){
+    isValid() {
         return true;
     }
 
-    getData(){
+    getData() {
         return this.workflowData;
     }
 
-    render(){
-        return  <pre>{JSON.stringify(this.workflowData, null, 2)}</pre>;
+    redirect() {
+        this.setState({
+            redirect: true
+        });
+    }
+
+    finish() {
+        toast.success("Wow so easy !", {
+            position: toast.POSITION.TOP_CENTER,
+            onClose: this.redirect
+        });
+
+    }
+
+    render() {
+        if (this.state.redirect === false) {
+            return (<React.Fragment>
+                <ToastContainer autoClose={2000}/>
+                <Table>
+                    <thead>
+                    <tr>
+                        <th>Setting</th>
+                        <th>Value</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>Name</td>
+                        <td>{this.workflowData.accountInfo.fullName}</td>
+                    </tr>
+                    <tr>
+                        <td>Email</td>
+                        <td>{this.workflowData.accountInfo.email}</td>
+                    </tr>
+                    <tr>
+                        <td>Account type</td>
+                        <td>{this.workflowData.accountInfo.accountType}</td>
+                    </tr>
+                    <tr>
+                        <td>Billing / Autopay</td>
+                        <td>{this.workflowData.preferences.autoPay ? "Yes" : "No"}</td>
+                    </tr>
+                    <tr>
+                        <td>Notifications / Product changes</td>
+                        <td>{this.workflowData.preferences.notifyProductChanges ? "Yes" : "No"}</td>
+                    </tr>
+                    <tr>
+                        <td>Notifications / Upcoming events</td>
+                        <td>{this.workflowData.preferences.notifyUpcomingEvents ? "Yes" : "No"}</td>
+                    </tr>
+                    </tbody>
+                </Table>
+            </React.Fragment>)
+        }
+        if (this.state.redirect) {
+            return <Redirect to="/"/>
+        }
     }
 }

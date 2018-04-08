@@ -4,9 +4,11 @@ import ReactRouterPropTypes from 'react-router-prop-types';
 import WorkflowForm from "./WorkflowForm";
 import workflowService from "../../services/workflow/workflowService";
 import debug from "../../services/debug";
-import {Row, Col, PageHeader} from "react-bootstrap";
+import {Row, Col, PageHeader, HelpBlock} from "react-bootstrap";
 import CircularProgressbar from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
+import { confirmAlert } from 'react-confirm-alert'; // Import
+import 'react-confirm-alert/src/react-confirm-alert.css' // Import css
 
 const settings = {
     formId: "workflowForm"
@@ -17,13 +19,7 @@ class WorkflowContainer extends Component {
         super(props, context);
 
         this.workflow = null;
-        this.workflowData = {
-            accountInfo: {
-                fullName: "Jason Harper",
-                email: "foo@bar.com",
-                accountType: "premium"
-            }
-        };
+        this.workflowData = {};
         this.state = {
             stepIndex: 0,
             progress: 0,
@@ -62,22 +58,52 @@ class WorkflowContainer extends Component {
                 return isLoaded && this.state.stepIndex > 0;
             case "next":
                 return isLoaded && this.state.stepIndex < this.workflow.steps.length - 1;
+            case "finish":
+                return isLoaded && this.state.stepIndex === this.workflow.steps.length -1;
             default:
                 debug.error(`Action ${action} is not a supported navigation action.`)
         }
     }
 
-    navigate() {
-        const action = this.pendingNavigationAction;
+    async navigate() {
+        const action = this.pendingNavigationAction.toUpperCase();
         let targetIndex;
-        switch (this.pendingNavigationAction) {
-            /* custom nav actions can go here */
-            default:
-                debug.errorIf(action !== "previous" && action !== "next", `Action ${action} is not a supported navigation action.`)
+        switch (action) {
+            case "NEXT":
+            case "PREVIOUS":
                 targetIndex = this.state.stepIndex + (action === "previous" ? -1 : 1);
+                this.setCurrentStepInfo(targetIndex, this.workflow.steps[targetIndex]);
                 break;
+            case "FINISH":
+                if(await this.confirmFinish()){
+                    if(typeof this.stepComponent.finish !== "function"){
+                        throw new Error("The configured finish step does not have the required 'finish' function.");
+                    }
+                    this.stepComponent.finish();
+                }
+                break;
+            default:
+                throw new Error(`Action ${action} is not a supported navigation action.`);
         }
-        this.setCurrentStepInfo(targetIndex, this.workflow.steps[targetIndex]);
+    }
+
+    confirmFinish(){
+        return new Promise(resolve => {
+            confirmAlert({
+                title: "Finish workflow?",
+                message: "Are you sure you with to complete this workflow?",
+                buttons: [
+                    {
+                        label: 'Yes',
+                        onClick: () => resolve(true)
+                    },
+                    {
+                        label: 'No',
+                        onClick: () => resolve(false)
+                    }
+                ]
+            })
+        });
     }
 
     onSubmitClick(action) {
@@ -103,13 +129,15 @@ class WorkflowContainer extends Component {
         return (<React.Fragment>
                 <Row className="mt-3">
                     <Col sm={3} style={{alignSelf: 'center'}}>
-                        <WorkflowNav allowPrevious={this.canNavigate("previous")} formId={settings.formId}
+                        <WorkflowNav allowPrevious={this.canNavigate("previous")}
+                             formId={settings.formId}
                              allowNext={this.canNavigate("next")}
+                             isFinishStep={this.canNavigate("finish")}
                              onSubmitClick={this.onSubmitClick}/>
                     </Col>
                     <Col sm={9} className="pb-2" style={{borderBottom: 'solid 2px #ccc'}}>{this.state.currentStepDescription && <React.Fragment>
                         <PageHeader>{this.state.currentStepDescription.title}</PageHeader>
-                        <span className="help-text">{this.state.currentStepDescription.description}</span>
+                        <HelpBlock>{this.state.currentStepDescription.description}</HelpBlock>
                     </React.Fragment>}
                     </Col>
                 </Row>
@@ -120,7 +148,7 @@ class WorkflowContainer extends Component {
                         </div>
                     </Col>
                     <Col sm={9}>
-                        <WorkflowForm onSubmit={this.onSubmit} id={settings.formId}>
+                        <WorkflowForm onSubmit={this.onSubmit} formId={settings.formId}>
                             {this.state.currentStepDescription && this.getStep()}
                         </WorkflowForm>
                     </Col>

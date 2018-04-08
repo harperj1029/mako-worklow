@@ -26,6 +26,7 @@ export default class WorkflowForm extends Component {
     };
 
     static propTypes = {
+        formId: PropTypes.string.isRequired,
         onSubmit: PropTypes.func.isRequired
     };
 
@@ -58,7 +59,8 @@ export default class WorkflowForm extends Component {
                     ...previousState.fields[name],
                     isChanged: true,
                     isTouched: true,
-                    value: event.target.value || ""
+                    value: event.target.value || "",
+                    ...(isCheckedInput(event.target) ? {checked: !!event.target.checked} : {})
                 }
             }
         }), this.setFieldErrors);
@@ -173,7 +175,9 @@ export default class WorkflowForm extends Component {
 
     getValues(){
         return Object.keys(this.state.fields).reduce((values, fieldName) => {
-            values[fieldName] = this.state.fields[fieldName].value;
+            values[fieldName] = typeof this.state.fields[fieldName].checked !== "undefined"?
+                this.state.fields[fieldName].checked :
+                this.state.fields[fieldName].value;
             return values;
         }, {});
     }
@@ -186,7 +190,9 @@ export default class WorkflowForm extends Component {
     }
 
     render() {
-        const {onSubmit, id, ...props} = this.props; // eslint-disable-line no-unused-vars
-        return <form onSubmit={this.onSubmit} id={id} {...props}/>
+        const {onSubmit, formId, ...props} = this.props; // eslint-disable-line no-unused-vars
+        return <form onSubmit={this.onSubmit} id={formId} {...props}/>
     }
 }
+
+const isCheckedInput = input => (input.type === "radio" || input.type === "checkbox");

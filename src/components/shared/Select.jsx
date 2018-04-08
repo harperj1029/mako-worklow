@@ -2,10 +2,11 @@ import React from 'react';
 import PropTypes from "prop-types";
 import Control from "./control";
 import omit from "object.omit";
+import {FormGroup, ControlLabel} from "react-bootstrap";
 
 const Select = ({label, unselectedText, options, ...props}) => (
-    <div className="form-group">
-        <label>{label}</label>
+    <FormGroup>
+        <ControlLabel>{label}</ControlLabel>
         <Control label={label} {...props} render={({isChanged, isTouched, error, ...props}) => (
             <React.Fragment>
                 <select
@@ -25,7 +26,7 @@ const Select = ({label, unselectedText, options, ...props}) => (
                     <span className="invalid-feedback">{error}</span>}
             </React.Fragment>
         )}/>
-    </div>
+    </FormGroup>
 );
 
 Select.propTypes = {

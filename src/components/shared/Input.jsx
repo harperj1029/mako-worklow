@@ -2,14 +2,15 @@ import React from 'react';
 import PropTypes from "prop-types";
 import Control from "./control";
 import omit from "object.omit";
+import {FormGroup, ControlLabel} from "react-bootstrap";
 
 const defaults = {
     text: "text"
 };
 
 const Input = ({label, ...props}) => (
-    <div className="form-group">
-        <label>{label}</label>
+    <FormGroup>
+        <ControlLabel>{label}</ControlLabel>
         <Control label={label} {...props} render={({isChanged, isTouched, error, ...props}) => (
             <React.Fragment>
                 <input
@@ -22,7 +23,7 @@ const Input = ({label, ...props}) => (
                     <span className="invalid-feedback">{error}</span>}
             </React.Fragment>
         )}/>
-    </div>);
+    </FormGroup>);
 
 Input.propTypes = {
     name: PropTypes.string.isRequired,

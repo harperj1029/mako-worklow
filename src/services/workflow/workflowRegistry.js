@@ -1,8 +1,7 @@
 import debug from "../../services/debug";
 
 const entries = new Map([
-    ["one", "workflow1"],
-    ["two", "workflow2"]
+    ["one", "workflow1"]
 ])
 
 class WorkflowRegistry {
