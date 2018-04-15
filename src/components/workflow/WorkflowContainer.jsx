@@ -71,7 +71,7 @@ class WorkflowContainer extends Component {
         switch (action) {
             case "NEXT":
             case "PREVIOUS":
-                targetIndex = this.state.stepIndex + (action === "previous" ? -1 : 1);
+                targetIndex = this.state.stepIndex + (action === "PREVIOUS" ? -1 : 1);
                 this.setCurrentStepInfo(targetIndex, this.workflow.steps[targetIndex]);
                 break;
             case "FINISH":
